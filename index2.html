@@ -1,0 +1,30 @@
+<!doctype html>
+<html ng-app="kbz">
+<head>
+    <meta charset="UTF-8">
+    <title>作用域区分</title>
+    <style>
+        .show-scope .doc-example-live.ng-scope,.show-scope .doc-example-live .ng-scope  {
+            border: 1px solid red;
+            margin: 3px;}
+    </style>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script type="application/javascript">
+        angular.module('kbz',[]).controller('GreetCtrl',function(){
+            this.name = 'World';
+        }).controller('ListCtrl',function(){
+            this.names = ['Igor', 'Misko', 'Vojta'];
+        });
+    </script>
+</head>
+<body>
+<div ng-controller="GreetCtrl as gc">
+    Hello {{gc.name}}!
+</div>
+<div ng-controller="ListCtrl as lc">
+    <ol>
+        <li ng-repeat="name in lc.names">{{name}}</li>
+    </ol>
+</div>
+</body>
+</html>

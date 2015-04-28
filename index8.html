@@ -1,0 +1,34 @@
+<!doctype html>
+<html ng-app="kbz">
+<head>
+    <meta charset="UTF-8">
+    <title>父层对子层的相互调用</title>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script>
+        // 这种另外一种使用控制器的方式，用$scope 代替 this 实例， 这样就不用
+        // 可以这么理解，$scope 就是原型链对象， this 就是构造函数里面的东西
+        angular.module("kbz",[]).controller("FatherCtrl",function($scope){
+            this.name = "f";
+            $scope.age = '12';
+        }).controller("ChildCtrl", function($scope){
+            this.name = "c";
+            $scope.$parent.fc.name = '1';
+            $scope.$parent.cc = this;
+            //$scope.age = '13'
+        });
+    </script>
+</head>
+<body>
+<div ng-controller="FatherCtrl as fc">
+    this is father {{fc.name}} <br>
+    this is child {{cc.name}} <br>
+    age is {{age}}
+    <div ng-controller="ChildCtrl as cc">
+        this is child {{cc.name}} <br>
+        里面 name {{cc.name}} {{fc.name}} <br>
+        age is {{age}}
+    </div>
+</div>
+
+</body>
+</html>

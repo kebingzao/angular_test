@@ -1,0 +1,55 @@
+<!doctype html>
+<html ng-app="xmpl">
+<head>
+    <meta charset="UTF-8">
+    <title>模块</title>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script>
+//        我们推荐的是将你的应用拆分成以下几个模块：
+//
+//        一个服务模块，用来做服务的声明。
+//        一个指令模块，用来做指令的声明。
+//        一个过滤器模块，用来做过滤器声明。
+//        一个依赖以上模块的应用级模块，它包含初始化代码。
+//        这样拆分的原因是，在你的测试中常常需要忽略掉初始化代码，因为这些代码比较难测试。
+//        通过把它拆分出来就能在测试中方便地忽视掉它。通过只加载和当前测试相关的模块，也能使测试更专一。
+
+//      服务
+        angular.module('xmpl.service', []).
+                value('greeter', {
+                    salutation: 'Hello',
+                    localize: function(localization) {
+                        this.salutation = localization.salutation;
+                    },
+                    greet: function(name) {
+                        return this.salutation + ' ' + name + '!';
+                    }
+                }).
+                value('user', {
+                    load: function(name) {
+                        this.name = name;
+                    }
+                });
+//      指令
+        angular.module('xmpl.directive', []);
+//      过滤器
+        angular.module('xmpl.filter', []);
+
+        angular.module('xmpl', ['xmpl.service', 'xmpl.directive', 'xmpl.filter']).
+                run(function(greeter, user) {
+                    // This is effectively part of the main method initialization code
+                    greeter.localize({
+                        salutation: 'Bonjour'
+                    });
+                    user.load('World');
+                }).controller("XmplController", function($scope, greeter, user) {
+                    $scope.greeting = greeter.greet(user.name);
+                });
+    </script>
+</head>
+<body>
+    <div ng-controller="XmplController">
+        {{ greeting }}!
+    </div>
+</body>
+</html>

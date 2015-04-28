@@ -1,0 +1,36 @@
+<!doctype html>
+<html ng-app="kbz">
+<head>
+    <meta charset="UTF-8">
+    <title>表单(ng-model)</title>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script>
+        // 注意例子中的novalidate是用来屏蔽浏览器本身的验证功能的。
+        angular.module("kbz",[]).controller("Cntl2",function(){
+            var self = this;
+            self.master= {};
+            self.update = function(user) {
+                self.master= angular.copy(user);
+            };
+            self.reset = function() {
+                self.user = angular.copy(self.master);
+            };
+            self.reset();
+        });
+    </script>
+</head>
+<body>
+<div ng-controller="Cntl2 as cc">
+    <form novalidate class="simple-form">
+        Name: <input type="text" ng-model="cc.user.name" /><br />
+        E-mail: <input type="email" ng-model="cc.user.email" /><br />
+        Gender: <input type="radio" ng-model="cc.user.gender" value="male" />male
+        <input type="radio" ng-model="cc.user.gender" value="female" />female<br />
+        <button ng-click="cc.reset()">RESET</button>
+        <button ng-click="cc.update(cc.user)">SAVE</button>
+    </form>
+    <pre>form = {{cc.user | json}}</pre>
+    <pre>master = {{cc.master | json}}</pre>
+</div>
+</body>
+</html>

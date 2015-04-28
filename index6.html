@@ -1,0 +1,25 @@
+<!doctype html>
+<html ng-app="kbz">
+<head>
+    <meta charset="UTF-8">
+    <title>注入器</title>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script>
+        angular.module("kbz",[]).service('time',function($timeout){
+            var time = {};
+            (function tick() {
+                time.now = new Date().toString();
+                $timeout(tick, 1000);
+            })();
+            return time;
+        }).controller("ClockCtrl",function(time){
+            this.time = time;
+        });
+    </script>
+</head>
+<body>
+<div ng-controller="ClockCtrl as cc">
+    Current time is: {{ cc.time.now }}
+</div>
+</body>
+</html>

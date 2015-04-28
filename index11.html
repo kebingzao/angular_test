@@ -1,0 +1,28 @@
+<!doctype html>
+<html ng-app="kbz">
+<head>
+    <meta charset="UTF-8">
+    <title>表达式测试(2)</title>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script>
+//        属性表达式计算是发生在作用域中的。
+//        Javascript默认是以window为作用域的。
+//        AngularJS要使用window作用域的话得用$window来指向全局window对象。
+//        比如说，你使用window中定义的alert()方法，在AngularJS表达式中必须写成$window.alert()才行。
+//        这是为了防止意外进入全局作用域（各种bug的来源）而设计的。
+        angular.module("kbz",[]).controller("Cntl2",function($window){
+            var self = this;
+            this.name = 'world';
+            this.greet = function(){
+                ($window.mockWindow || $window).alert('Hello ' + self.name);
+            }
+        });
+    </script>
+</head>
+<body>
+<div class="example2" ng-controller="Cntl2 as cn">
+    Name: <input ng-model="cn.name" type="text"/>
+    <button ng-click="cn.greet()">Greet</button>
+</div>
+</body>
+</html>

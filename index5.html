@@ -1,0 +1,15 @@
+<!doctype html>
+<html ng-app>
+<head>
+    <meta charset="UTF-8">
+    <title>filters过滤器</title>
+    <script src="bower_components/angular/angular.min.js"></script>
+</head>
+<body>
+<div ng-init="list = ['Chrome', 'Safari', 'Firefox', 'IE'] ">
+    Number formatting: {{ 1234567890 | number }} <br>
+    array filtering <input ng-model="predicate">
+    {{ list | filter:predicate | json }}
+</div>
+</body>
+</html>

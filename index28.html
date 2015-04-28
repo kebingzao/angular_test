@@ -1,0 +1,31 @@
+<!doctype html>
+<html ng-app="kbz">
+<head>
+    <meta charset="UTF-8">
+    <title>双向绑定之 $watch 监听参数变化</title>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script>
+//        为了监视一个变量的变化，你可以使用$scope.$watch函数。
+//        这个函数有三个参数，它指明了”要观察什么”(watchExp)，”在变化时要发生什么”(listener),
+//        以及你要监视的是一个变量还是一个对象。当我们在检查一个参数时，我们可以忽略第三个参数。
+//        例如下面的例子：
+        var app = angular.module('kbz', []).run(function ($rootScope) {
+            // 第一个参数可以使用函数，也可以使用字符串，如果是使用字符串形式，angular代码中，会转化为函数
+//            $rootScope.$watch( function( ) {
+//                return $rootScope.name;
+//            }, function( newValue, oldValue ) {
+//                console.log('$rootScope.name was updated!');
+//            } );
+            $rootScope.$watch('name', function( newValue, oldValue ) {
+                console.log('$rootScope.name was updated!');
+            });
+            $rootScope.name = "Pascal";
+        });
+    </script>
+</head>
+<body>
+    <p>Hello {{name}}!</p>
+    <!--这时候改变name的值，那么就会触发监听事件-->
+    <button ng-click="name = 'Christoph'">Click me!</button>
+</body>
+</html>

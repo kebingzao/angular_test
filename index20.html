@@ -1,0 +1,33 @@
+<!doctype html>
+<html ng-app="myModule">
+<head>
+    <meta charset="UTF-8">
+    <title>简单说说依赖注入</title>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script>
+        angular.module('myModule', []).
+
+            // Teach the injector how to build a 'greeter'
+            // Notice that greeter itself is dependent on '$window'
+                factory('greeter', function($window) {
+                    // This is a factory function, and is responsible for
+                    // creating the 'greet' service.
+                    return {
+                        greet: function(text) {
+                            $window.alert(text);
+                        }
+                    };
+                });
+
+        // New injector is created from the module.
+        // (This is usually done automatically by angular bootstrap)
+        var injector = angular.injector('myModule');
+        // Request any dependency from the injector
+        var greeter = injector.get('greeter');
+        greeter.greet("hehe");
+    </script>
+</head>
+<body>
+
+</body>
+</html>

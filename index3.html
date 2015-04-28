@@ -1,0 +1,21 @@
+<!doctype html>
+<html ng-app>
+<head>
+    <meta charset="UTF-8">
+    <title>模型</title>
+    <script src="bower_components/angular/angular.min.js"></script>
+</head>
+<body>
+<!--注意这里，不能对ng-app 属性赋值，不然会出错-->
+<div ng-init="list = ['Chrome', 'Safari', 'Firefox', 'IE'] ">
+    <input ng-model="list" ng-list> <br>
+    <input ng-model="list" ng-list> <br>
+    <pre>list={{list}}</pre> <br>
+    <ol>
+        <li ng-repeat="item in list">
+            {{item}}
+        </li>
+    </ol>
+</div>
+</body>
+</html>

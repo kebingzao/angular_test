@@ -1,0 +1,56 @@
+<!doctype html>
+<html ng-app="kbz">
+<head>
+    <meta charset="UTF-8">
+    <title>编写一个获取当前时间的指令</title>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script>
+        angular.module("kbz",[]).controller("Ctrl2",function($scope){
+            $scope.format = 'M/d/yy h:mm:ss a';
+        })// Register the 'myCurrentTime' directive factory method.
+            // We inject $timeout and dateFilter service since the factory method is DI.
+                .directive('myCurrentTime', function($timeout, dateFilter) {
+                    // 直接返回指令的链接函数 (编译方法不需要)
+                    return function(scope, element, attrs) {
+                        var format,  // date format
+                                timeoutId; // timeoutId, so that we can cancel the time updates
+
+                        // used to update the UI
+                        function updateTime() {
+                            element.text(dateFilter(new Date(), format));
+                        }
+
+                        // watch the expression, and update the UI on change.
+                        // 监听对象内属性my-current-time的值的改变
+                        scope.$watch(attrs.myCurrentTime, function(value) {
+                            format = value;
+                            updateTime();
+                        });
+
+                        // schedule update in one second
+                        function updateLater() {
+                            // save the timeoutId for canceling
+                            timeoutId = $timeout(function() {
+                                updateTime(); // update DOM
+                                updateLater(); // schedule another update
+                            }, 1000);
+                        }
+
+                        // listen on DOM destroy (removal) event, and cancel the next UI update
+                        // to prevent updating time ofter the DOM element was removed.
+                        element.bind('$destroy', function() {
+                            $timeout.cancel(timeoutId);
+                        });
+
+                        updateLater(); // kick off the UI update process.
+                    }
+                });
+    </script>
+</head>
+<body>
+<div ng-controller="Ctrl2">
+    Date format: <input ng-model="format"> <hr/>
+    Current time is: <span my-current-time="format"></span>
+</div>
+</body>
+</html>

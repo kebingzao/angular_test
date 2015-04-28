@@ -1,0 +1,27 @@
+<!doctype html>
+<html ng-app="kbz">
+<head>
+    <meta charset="UTF-8">
+    <title>使用一次性数据绑定</title>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script src="bower_components/angular-route/angular-route.min.js"></script>
+    <script>
+//        一次性数据绑定表达式可以在数据稳定之后，不需要在$digest循环中重计算…
+//        一次性数据绑定的出现解决了前面提到的由监听器太多带来的性能问题。那么我们应该如何使用一次性数据绑定呢？
+//        使用一次性数据绑定非常的简单，我们只需要在表达式之前加上双冒号::即可。比如，前面我们使用了插值指令将name属性绑定到了视图中:
+//        也就是说只会改变一次，其他时候的改变，都不会变化
+        var app = angular.module('kbz', []).run(function ($rootScope, $timeout) {
+            $rootScope.name = "Pascal";
+            $timeout(function(){
+                // 因为是一次性绑定，所以这时候，如果再变化的话，视图是不会改变的
+                $rootScope.name = "hehe";
+            },2000);
+        });
+    </script>
+</head>
+<body>
+    <p>Hello {{::name}}!</p>
+    <!--这时候改变name的值，是不会再变化的-->
+    <button ng-click="name = 'Christoph'">Click me!</button>
+</body>
+</html>

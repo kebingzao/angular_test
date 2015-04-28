@@ -1,0 +1,59 @@
+<!doctype html>
+<html ng-app="kbz">
+<head>
+    <meta charset="UTF-8">
+    <title>与表单的状态或者表单元素状态绑定</title>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script>
+//        一个表单就是一个FormController的实例。
+//        表单实例可以通过name属性选择性地公开到作用域中。
+//        同样的，一个表单控件也是一个NgModelController的实例。
+//        表单控件也能同样的被公开到作用域中。
+//        这意味视图能通过绑定的基本功能获取表单或者表单控件的状态。
+//        这些特点让我们能将上面的例子改造成下面这样：
+//
+//        只有当表单发生改变时，重置按钮才会被显示出来。
+//        只有当表单有改变并且改变的值都是合法的，保存按钮才会被显示出来。
+//        能自定义user.email和user.agree的错误信息。
+        angular.module("kbz",[]).controller("Controller",function($scope){
+            $scope.master= {};
+            $scope.update = function(user) {
+                $scope.master= angular.copy(user);
+            };
+            $scope.reset = function() {
+                $scope.user = angular.copy($scope.master);
+            };
+            $scope.isUnchanged = function(user) {
+                return angular.equals(user, $scope.master);
+            };
+            $scope.reset();
+        });
+    </script>
+</head>
+<body>
+<div ng-controller="Controller">
+    <form name="form" class="css-form" novalidate>
+        Name:
+        <input type="text" ng-model="user.name" name="uName" required /><br />
+        E-mail:
+        <input type="email" ng-model="user.email" name="uEmail" required/><br />
+        <div ng-show="form.uEmail.$dirty && form.uEmail.$invalid">Invalid:
+            <span ng-show="form.uEmail.$error.required">Tell us your email.</span>
+            <span ng-show="form.uEmail.$error.email">This is not a valid email.</span>
+        </div>
+
+        Gender: <input type="radio" ng-model="user.gender" value="male" />male
+        <input type="radio" ng-model="user.gender" value="female" />female<br />
+
+        <input type="checkbox" ng-model="user.agree" name="userAgree" required />
+        I agree: <input ng-show="user.agree" type="text" ng-model="user.agreeSign"
+                        required /><br />
+        <div ng-show="!user.agree || !user.agreeSign">Please agree and sign.</div>
+
+        <button ng-click="reset()" ng-disabled="isUnchanged(user)">RESET</button>
+        <button ng-click="update(user)"
+                ng-disabled="form.$invalid || isUnchanged(user)">SAVE</button>
+    </form>
+</div>
+</body>
+</html>

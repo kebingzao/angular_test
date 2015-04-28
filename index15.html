@@ -1,0 +1,93 @@
+<!doctype html>
+<html ng-app="kbz">
+<head>
+    <meta charset="UTF-8">
+    <title>自定义验证(表单验证)</title>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script>
+//        想要定义你自己的验证器的话，可以通过在你自己的指令中添加一个验证函数给ngModel的控制器来实现。
+//        要想获得控制器的引用，需要在指令中指定依赖，像下面的例子一样。
+//        验证函数可以写在两个地方。
+//
+//        模型到视图的更新中- 只要绑定的模型改变了，NgModelController#$formatters数组中的函数就会被轮流调用，
+//        所以每一个函数都有机会对数据进行格式化或者通过NgModelController#$setValidity来改变表单的验证状态。
+//
+//        视图到模型的更新中- 相同的，只要用户与表单实现了就会，NgModelController#$setViewValue就会被调用。
+//        这次是NgModelController#$parsers数组中的函数会被依次调用，
+//        每个函数都有机会来改变值或者通过NgModelController#$setValidity来改变表单的验证状态。
+//
+//        下面的例子中，我们创建了两个指令。
+//        第一个要验证的是输入是否是整数。
+//        例如，1.23就不是符合验证的值，因为它包含了分数部分。注意，我们是将验证数组中的项从头取出，而不是压入。
+//        这是因为我们要在输入值被改变（格式化）前，先验证输入的合法性。
+//
+//        第二个指令是一个“智能浮点(smart-float)”。
+//        它能把"1.2"或者"1,2"都转化为合法的浮点数"1.2"。
+//        注意，这里我们不能使用“数字输入类型”，因为支持HTML5的浏览器不允许用户输入像"1,2"这样的非法值。
+        var INTEGER_REGEXP = /^\-?\d*$/;
+        var FLOAT_REGEXP = /^\-?\d+((\.|\,)\d+)?$/;
+        angular.module("kbz",[]).controller("Controller",function(){
+
+        }).directive('integer', function() {
+            return {
+                require: 'ngModel',
+                link: function(scope, elm, attrs, ctrl) {
+                    // 这边要往$parsers添加一个处理函数，因为视图到模板的更新中，
+                    // NgModelController#$setViewValue就会被调用。
+                    // 这次是NgModelController#$parsers数组中的函数会被依次调用
+                    ctrl.$parsers.unshift(function(viewValue) {
+                        // viewValue 就是所绑定控件的值
+                        if (INTEGER_REGEXP.test(viewValue)) {
+                            // 执行这个函数之后，就会往 form.size.$error 添加一个 integer 属性，并设置值
+                            // it is valid
+                            ctrl.$setValidity('integer', true);
+                            return viewValue;
+                        } else {
+                            // it is invalid, return undefined (no model update)
+                            ctrl.$setValidity('integer', false);
+                            return undefined;
+                        }
+                    });
+                }
+            };
+        }).directive('smartFloat', function() {
+            return {
+                require: 'ngModel',
+                link: function(scope, elm, attrs, ctrl) {
+                    ctrl.$parsers.unshift(function(viewValue) {
+                        if (FLOAT_REGEXP.test(viewValue)) {
+                            ctrl.$setValidity('float', true);
+                            return parseFloat(viewValue.replace(',', '.'));
+                        } else {
+                            ctrl.$setValidity('float', false);
+                            return undefined;
+                        }
+                    });
+                }
+            };
+        });
+    </script>
+</head>
+<body>
+<div ng-controller="Controller as cc">
+    <form name="form" class="css-form" novalidate>
+        <div>
+            Size (integer 0 - 10):
+            <input type="number" ng-model="size" name="size"
+                   min="0" max="10" integer />{{size}}<br />
+            <span ng-show="form.size.$error.integer">This is not valid integer!</span>
+          <span ng-show="form.size.$error.min || form.size.$error.max">
+            The value must be in range 0 to 10!</span>
+        </div>
+
+        <div>
+            Length (float):
+            <input type="text" ng-model="length" name="length" smart-float />
+            {{length}}<br />
+          <span ng-show="form.length.$error.float">
+            This is not a valid float number!</span>
+        </div>
+    </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!doctype html>
+<html ng-app="kbz">
+<head>
+    <meta charset="UTF-8">
+    <title>使用根作用域</title>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script src="bower_components/angular-route/angular-route.min.js"></script>
+    <script>
+//        为了实现双向数据绑定，AngularJS使用了$watch API来观察期作用域中的模型变化。
+//        具体的作用域取决于你的代码如何编写。如果你没有创建一个自作用域，
+//        就是说没有使用ngController指令在你的DOM和你的控制器代码之间创建一个关联，
+//        你可能处理的是跟作用域$rootScope，这个作用域由ngApp自动创建，
+//        并且是应用中所有作用域的父作用域
+        var app = angular.module('kbz', []).run(function ($rootScope) {
+            $rootScope.name = "Pascal";
+        });
+    </script>
+</head>
+<body>
+    <p>Hello {{name}}!</p>
+    <button ng-click="name = 'Christoph'">Click me!</button>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!doctype html>
+<html ng-app="kbz">
+<head>
+    <meta charset="UTF-8">
+    <title>编写一个允许多视图的指令 ngMultiView</title>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script src="bower_components/angular-route/angular-route.min.js"></script>
+    <script>
+        var app = angular.module('kbz', ['ngRoute']);
+        app.value('MultiViewPaths',
+                {
+                    '/' : {
+                        content : {
+                            template : '<h1>Home Page</h1><p>More Cats!</p>'
+                        },
+                        secondaryContent :  {
+                            template : '<h2>Visitors Online</h2><ul><li ng-repeat="user in users">{{user}}</li></ul>',
+                            controller : 'ListUsersCtrl'
+                        }
+                    },
+                    '/cats' : {
+                        content:  {
+                            template : '<h1>All Cats</h1><ul><li ng-repeat="cat in cats">{{cat}}</li></ul>',
+                            controller : 'ListCatsCtrl'
+                        },
+                        secondaryContent :  {
+                            template : '<h2>Cat of the Minute: {{cat}}</h2>',
+                            controller : 'CatOfTheMinuteCtrl'
+                        }
+                    }
+                });
+
+        app.directive("ngMultiView", ['$rootScope', '$compile', '$controller', '$location', 'MultiViewPaths', function($rootScope, $compile, $controller, $location, MultiViewPaths){
+            return {
+                terminal: true,
+                priority: 400,
+                transclude: 'element',
+                compile : function(element, attr, linker){
+                    return function(scope, $element, attr) {
+                        var currentElement,
+                                // 获取是那个模板的路径， 因为一个路径有两种模板渲染方式
+                                panel = attr.ngMultiView;
+//                        我们在此不绑定”$routeChangeSuccess”事件，而是去绑定”$locationChangeSuccess”事件，
+//                        来确保我们的指令完全的独立于ngRoute。ngMultiView将会根据下面的方式运行：
+//                        一个url的变化会触发’$locationChangeSuccess’事件，它反过来会调用那个update()函数；
+//                        在update函数内部：获取URL#符号后面的部分
+//                        使用这个URL变量，以及panel，我们从MultiViewPaths中查找相应的控制器和模板
+//                        如果我们找到了控制器和模板，ngMultiView几乎就和ngView一样了
+                        $rootScope.$on('$locationChangeSuccess', update);
+                        update();
+
+                        // update view
+                        function update(evt, newUrl, oldUrl){
+                            if(!newUrl){ return }
+                            var url = newUrl.match(/#(\/.*)/),
+                                    match, template, controller;
+
+                            match = url ? MultiViewPaths[url[1]] : MultiViewPaths['/'];
+                            template = match[panel].template;
+                            controller = match[panel].controller;
+
+                            if(template){
+                                var newScope = scope.$new(),
+                                        locals = {},
+                                        newController = controller;
+
+                                linker(newScope, function(clone){
+                                    clone.html(template);
+                                    $element.parent().append(clone);
+
+                                    if(currentElement){
+                                        currentElement.remove();
+                                    }
+
+                                    var link = $compile(clone.contents());
+
+                                    currentElement = clone;
+
+                                    if (newController) {
+                                        locals.$scope = newScope;
+                                        var controller = $controller(newController, locals);
+                                        clone.data('$ngControllerController', newController);
+                                        clone.children().data('$ngControllerController', newController);
+                                    }
+
+                                    link(newScope);
+                                    newScope.$emit('$viewContentLoaded');
+                                });
+
+                            }else{
+                                //cleanup last view
+                            }
+                        }
+                    }
+                }
+            }
+        }]);
+
+
+        /* creating the controllers and their data */
+        app.controller('ListUsersCtrl', ['$scope', function($scope){
+            $scope.users = ['Lord Nikon', 'Acid Burn', 'Crash Override'];
+        }]);
+
+        app.value('cats', ['Toonces','Stache','Americat','Cassiopeia','Puck','Dica','Vivian','Shosh','Gray','Bashful','Querida','Ignatowski','Aenias','Ramsay','Ishcabible','Guinness','Roux','Gefahr']);
+
+        app.controller('ListCatsCtrl', ['$scope', 'cats', function($scope, cats){
+            $scope.cats = cats;
+        }]);
+
+        app.controller('CatOfTheMinuteCtrl', ['$scope', 'cats', function($scope, cats){
+            var randIndex = Math.floor(Math.random() * cats.length);
+            $scope.cat = cats[randIndex];
+        }]);
+    </script>
+</head>
+<body>
+<!--指定这个路径的第几个模板-->
+<div ng-multi-view="content"></div>
+<div ng-multi-view="secondaryContent"></div>
+</body>
+</html>

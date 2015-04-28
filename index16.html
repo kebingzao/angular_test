@@ -1,0 +1,48 @@
+<!doctype html>
+<html ng-app="kbz">
+<head>
+    <meta charset="UTF-8">
+    <title>实现自定义的表单控件(用ngModel)</title>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script>
+//        要和ngModel指令协同工作实现自定义控件，并且实现双向绑定的话，需要：
+//
+//        实现render方法。这个方法负责在数据传递给NgModelController#$formatters后来渲染数据。
+//        在用户与控件交互并且模型需要被更新时，调用$setViewValue方法。
+//        这通常是在DOM的监听事件中完成的。（查看$compileProvider.directive来获取更多信息）
+//        下面的例子演示了如何添加一个“内容可编辑”的数据双向绑定的元素。
+angular.module('kbz', []).directive('contenteditable', function() {
+    return {
+        require: 'ngModel',
+        link: function(scope, elm, attrs, ctrl) {
+            // view -> model
+            elm.bind('blur', function() {
+                scope.$apply(function() {
+                    ctrl.$setViewValue(elm.html());
+                });
+            });
+
+            // model -> view
+            ctrl.$render = function(value) {
+                elm.html(value);
+            };
+
+            // load init value from DOM
+            ctrl.$setViewValue(elm.html());
+        }
+    };
+});
+    </script>
+</head>
+<body>
+<div contentEditable="true" ng-model="content" title="Click to edit">Some</div>
+<pre>model = {{content}}</pre>
+
+<style type="text/css">
+    div[contentEditable] {
+        cursor: pointer;
+        background-color: #D0D0D0;
+    }
+</style>
+</body>
+</html>

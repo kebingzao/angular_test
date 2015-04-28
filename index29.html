@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>自己实现angular的数据双向绑定</title>
+</head>
+<body>
+    <input type="text"/>
+    <button onclick="updateScopeValue()">改变值</button>
+</body>
+<script>
+
+    //        $digest函数将会在$rootScope中被$scope.$apply所调用。
+    //        它将会在$rootScope中运行digest循环，然后向下遍历每一个作用域并在每个作用域上运行循环。
+    //        在简单的情形中，digest循环将会触发所有位于$$watchers变量中的所有watchExp函数，
+    //        将它们和最新的值进行对比，如果值不相同，就会触发监听器。
+    //
+    //        当digest循环运行时，它将会遍历所有的监听器然后再次循环，只要这次循环发现了”脏值”，
+    //        循环就会继续下去。如果watchExp的值和最新的值不相同，那么这次循环就会被认为发现了脏值。
+    //        理想情况下它会运行一次，如果它运行超10次，你会看到一个错误。
+    //
+    //        因此当$scope.$apply运行的时候，$digest也会运行，它将会循环遍历$$watchers，
+    //        只要发现watchExp和最新的值不相等，变化触发事件监听器。在AngularJS中，只要一个模型的值可能发生变化，
+    //        $scope.$apply就会运行。这就是为什么当你在AngularJS之外更新$scope时，例如在一个setTimeout函数中，
+    //        你需要手动去运行$scope.$apply()：这能够让AngularJS意识到它的作用域发生了变化。
+    //scope.$apply(function() {
+    //    fn(scope, {$event:event});
+    //});
+
+    //我们已经可以来创建一个小巧的，简化版本的脏值检查了。
+    //当然，相比较之下，AngularJS中实现的脏值检查要更加先进一些，
+    //它提供疯了异步队列以及其他一些高级功能。
+
+
+    //Scope仅仅只是一个函数，它其中包含任何我们想要存储的对象。
+    //我们可以扩展这个函数的原型对象来复制$digest和$watch。
+    //我们不需要$apply方法，因为我们不需要在作用域的上下文中执行任何函数 – 我们只需要简单的使用$digest
+    var Scope = function( ) {
+        this.$$watchers = [];
+    };
+    //watch函数需要接受两个参数，watchExp和listener。
+    //当$watch被调用时，我们需要将它们push进入到Scope的$$watcher数组中。
+    Scope.prototype.$watch = function( watchExp, listener ) {
+//            如果没有提供listener，我们会将listener设置为一个空函数 – 这样一来我们可以$watch所有的变量。
+        this.$$watchers.push( {
+            watchExp: watchExp,
+            listener: listener || function() {}
+        } );
+    };
+    //接下来我们将会创建$digest。
+    //我们需要来检查旧值是否等于新的值，
+    //如果二者不相等，监听器就会被触发。
+    //我们会一直循环这个过程，直到二者相等。这就是”脏值”的来源 – 脏值意味着新的值和旧的值不相等！
+    Scope.prototype.$digest = function( ) {
+        var dirty;
+        // 如果有脏值，就会继续循环，直到没有脏值
+        do {
+            dirty = false;
+
+            for( var i = 0; i < this.$$watchers.length; i++ ) {
+                var newValue = this.$$watchers[i].watchExp(),
+                        oldValue = this.$$watchers[i].last;
+
+                if( oldValue !== newValue ) {
+                    this.$$watchers[i].listener(newValue, oldValue);
+
+                    dirty = true;
+
+                    this.$$watchers[i].last = newValue;
+                }
+            }
+        } while(dirty);
+    };
+
+    //接下来，我们将创建一个作用域的实例。我们将这个实例赋值给$scope。我们接着会注册一个监听函数，在更新$scope之后运行$digest！
+
+    var $scope = new Scope();
+
+    $scope.name = 'Ryan';
+
+    var element = document.querySelectorAll('input');
+
+    //把$digest函数绑定到一个input元素的keyup事件上。这就意味着我们不需要自己去调用$digest。这也意味着我们现在可以实现双向数据绑定！
+    element[0].onkeyup = function() {
+        $scope.name = element[0].value;
+
+        $scope.$digest();
+    };
+    // 添加监听
+    $scope.$watch(function(){
+        return $scope.name;
+    }, function( newValue, oldValue ) {
+        console.log('Input value updated - it is now ' + newValue);
+
+        element[0].value = $scope.name;
+    } );
+
+    var updateScopeValue = function updateScopeValue( ) {
+        $scope.name = 'Bob';
+        $scope.$digest();
+    };
+
+    // 初始化input的值
+    $scope.$digest();
+
+//    使用上面的代码，无论何时我们改变了input的值，$scope中的name属性都会相应的发生变化。这就是隐藏在AngularJS神秘外衣之下数据双向绑定的秘密！
+</script>
+</html>
